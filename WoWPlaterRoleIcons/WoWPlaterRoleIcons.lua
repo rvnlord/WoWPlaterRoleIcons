@@ -1,4 +1,4 @@
--- NAMEPLATE CREATED
+-- CONSTRUCTOR
 function (self, unitId, unitFrame, envTable)
     
     if (not _G.KnownPlayerSpecs) then
