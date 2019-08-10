@@ -4,21 +4,21 @@ function (self, unitId, unitFrame, envTable)
     if (not _G.KnownPlayerSpecs) then
         _G.KnownPlayerSpecs = { } -- create cache
     end
-
+    
     envTable.CreateRoleIcon = function (uf)
-
+        
         if (not UnitIsPlayer(uf.unit)) then
             return
         end
-
+        
         local role = UnitGroupRolesAssigned (uf.unit)
-
+        
         if (role and role ~= "NONE") then
             _G.KnownPlayerSpecs[uf.namePlateUnitGUID] = role --  Display assigned role
             envTable.AddRoleIcon (et, uf, role)
             return
         end
-            
+        
         if (UnitIsUnit(uf.unit, "target")) then -- Display role from inspect specialization if player is targeting sth
             local f = CreateFrame("Frame")
             
@@ -29,26 +29,26 @@ function (self, unitId, unitFrame, envTable)
                     NotifyInspect("target")
                 end
             end
-    
+            
             f:SetScript("OnEvent", function(self, event, ...)
-                local lUf = uf
-                if (not UnitIsUnit(lUf.unit, "target")) then
-                    return
-                end
-
-                local spec = GetInspectSpecialization("target")
-                f:UnregisterEvent("INSPECT_READY")
-                ClearInspectPlayer()
-
-                local id, name, description, icon, inspectedRole, class = GetSpecializationInfoByID (spec)
-                
-                _G.KnownPlayerSpecs[uf.namePlateUnitGUID] = inspectedRole
-
-                envTable.AddRoleIcon (envTable, lUf, inspectedRole)                
+				local lUf = uf
+				if (not UnitIsUnit(lUf.unit, "target")) then
+					return
+				end
+				
+				local spec = GetInspectSpecialization("target")
+				f:UnregisterEvent("INSPECT_READY")
+				ClearInspectPlayer()
+				
+				if (spec ~= 0) then
+					local id, name, description, icon, inspectedRole, class = GetSpecializationInfoByID (spec)
+					_G.KnownPlayerSpecs[uf.namePlateUnitGUID] = inspectedRole
+					envTable.AddRoleIcon (envTable, lUf, inspectedRole)
+				end             
             end)
-
+            
             InspectSpec()
-
+            
         elseif (Plater.ZoneInstanceType == "arena") then -- Display roles for arena opponeents
             local opponents = GetNumArenaOpponentSpecs()
             for i = 1, opponents do
@@ -79,19 +79,19 @@ function (self, unitId, unitFrame, envTable)
                 end
             end
         end
-
+        
     end
-  
+    
     envTable.AddRoleIcon = function (et, uf, role) -- create function for adding icon to the heaelthbar of the unitplate
-
+        
         if (uf.RoleFrame) then
             uf.RoleFrame:Hide()
         end
-
+        
         if (not UnitIsPlayer(uf.unit) or role == "NONE") then
             return
         end
-
+        
         if (role == "HEALER") then
             texture = [[Interface\AddOns\Textures\ClassRoles\healer]]
         elseif (role == "TANK") then
@@ -99,7 +99,7 @@ function (self, unitId, unitFrame, envTable)
         elseif (role == "DAMAGER") then
             texture = [[Interface\AddOns\Textures\ClassRoles\damager]]
         end
-
+        
         if (uf.RoleFrame and uf.RoleFrame.RoleIcon) then
             uf.RoleFrame:Show()
             uf.RoleFrame.RoleIcon:SetTexture(texture)
@@ -111,20 +111,20 @@ function (self, unitId, unitFrame, envTable)
             
             local roleIcon = Plater:CreateImage (roleFrame, texture, 20, 20)
             roleFrame.RoleIcon = roleIcon
-
+            
             uf.RoleFrame:Show()
         end
-
+        
         local roleIcon = uf.RoleFrame.RoleIcon
         roleIcon:ClearAllPoints()
-
+        
         if (uf.healthBar:IsVisible()) then
             roleIcon:SetPoint ('right', uf.healthBar, 'left', -28, 0)
         else
             roleIcon:SetPoint ('right', uf.ActorNameSpecial, 'left', -28, 0)
         end
     end
-        
+    
 end
 
 -- NAMEPLATE ADDED and TARGET CHANGED
@@ -138,7 +138,7 @@ function (self, unitId, unitFrame, envTable)
     end
     
 end
-    
+	
 -- NAMEPLATE REMOVED and DESTRUCTOR
 function (self, unitId, unitFrame, envTable)
     
